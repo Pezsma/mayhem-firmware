@@ -404,6 +404,7 @@ constexpr PinMap map_max283x_select{13, 14, 6, 28, 4};
 constexpr PinMap map_max283x_enable{14, 1, 7, 1, 4};
 constexpr PinMap map_max2831_rxtx_enable{14, 2, 7, 2, 4};
 constexpr PinMap map_max2831_rxhp{13, 15, 6, 29, 4};
+constexpr PinMap map_rffc5072_ld{13, 11, 6, 25, 4};
 
 // constexpr PinMap map_unused_1{2, 7, 0, 7, 0};
 
@@ -552,6 +553,9 @@ constexpr GPIO max2831_rxtx_enable{pin_max2831_rxtx_enable, map_max2831_rxtx_ena
 
 constexpr Pin pin_max2831_rxhp{map_max2831_rxhp.scu_port, map_max2831_rxhp.scu_pin};                                               // SCU: PD_15
 constexpr GPIO max2831_rxhp{pin_max2831_rxhp, map_max2831_rxhp.gpio_port, map_max2831_rxhp.gpio_pad, map_max2831_rxhp.gpio_mode};  // GPIO[6]29
+
+constexpr Pin pin_rffc5072_ld{map_rffc5072_ld.scu_port, map_rffc5072_ld.scu_pin};                                             // SCU: PD_11
+constexpr GPIO rffc5072_ld{pin_rffc5072_ld, map_rffc5072_ld.gpio_port, map_rffc5072_ld.gpio_pad, map_rffc5072_ld.gpio_mode};  // GPIO[6]25
 
 #else
 constexpr Pin pin_sgpio_13{map_sgpio_13.scu_port, map_sgpio_13.scu_pin};                                       // SCU: P4_8

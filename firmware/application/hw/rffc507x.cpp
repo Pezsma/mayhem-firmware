@@ -147,8 +147,12 @@ struct SynthConfig {
 
         const size_t prescaler_divider_log2 = prescaler::divider_log2(vco_frequency);
 
-        const uint64_t prescaled_lo_q24 = vco_frequency << (24 - prescaler_divider_log2);
-        const uint64_t n_divider_q24 = prescaled_lo_q24 / reference_frequency;
+        // GSG implementing a rounding algorithm to reduce phase noise
+        uint64_t tmp_n = (vco_frequency << (24 - prescaler_divider_log2)) / reference_frequency;
+        const uint8_t s = 6;
+        const uint8_t d = (24 - prescaler_divider_log2 + lo_divider_log2) - s;
+
+        const uint64_t n_divider_q24 = ((tmp_n + (1ULL << (d - 1))) >> d) << d;
 
 #ifdef PRALINE
         // DEBUG: Track everything
@@ -329,5 +333,88 @@ spi::reg_t RFFC507x::readback(const Readback readback) {
 
     return read(Register::READBACK);
 }
+
+#ifdef PRALINE
+bool RFFC507x::poll_ld(uint8_t& prelock_state) {
+    enum state {
+        STATE_LOCKED = 0x17,  // 0b10111
+        STATE_00010 = 0x02,
+        STATE_00100 = 0x04,
+        STATE_01011 = 0x0b,
+        STATE_PRELOCK1 = 0x10,  // 0b10000
+        STATE_PRELOCK2 = 0x1e,  // 0b11110
+        STATE_00000 = 0x00,
+        STATE_00001 = 0x01,
+        STATE_00011 = 0x03,
+        STATE_00101 = 0x05,
+        STATE_00110 = 0x06,
+        STATE_00111 = 0x07,
+        STATE_01010 = 0x0a,
+        STATE_10110 = 0x16,
+        STATE_11110 = 0x1e,
+        STATE_11111 = 0x1f,
+        STATE_NONE = 0xff,
+    };
+
+    if (prelock_state == STATE_NONE) {
+        _map.r.dev_ctrl.readsel = 0b0011;
+        flush_one(Register::DEV_CTRL);
+    }
+
+    uint16_t rb = readback(Readback::StateMachine);  // GSG RFFC5071_READBACK_REG call
+    uint8_t rsm_state = (rb >> 11) & 0b11111;
+
+    bool gpo4_ld = rffc5072_ld.read();
+
+    switch (rsm_state) {
+        case STATE_LOCKED:
+            if (gpo4_ld &&
+                ((prelock_state == STATE_PRELOCK1) ||
+                 (prelock_state == STATE_PRELOCK2))) {
+                return true;
+            }
+            break;
+        case STATE_00010:
+        case STATE_00100:
+        case STATE_01011:
+            break;
+        case STATE_PRELOCK1:
+        case STATE_PRELOCK2:
+            prelock_state = rsm_state;
+            break;
+        case STATE_00000:
+        case STATE_00001:
+        case STATE_00011:
+        case STATE_00101:
+        case STATE_00110:
+        case STATE_00111:
+        case STATE_01010:
+        case STATE_10110:
+        case STATE_11111:
+        case STATE_NONE:
+            break;
+        default:
+            break;
+    }
+
+    return false;
+}
+
+bool RFFC507x::wait_for_lock() {
+    uint8_t prelock_state = 0xff;  // STATE_NONE
+
+    // Max 10-20 ms delay
+    // 20 ms timeout
+    for (int i = 0; i < 200; i++) {
+        if (poll_ld(prelock_state)) {
+            return true;
+        }
+        chThdSleepMicroseconds(100);
+    }
+
+    return false;  // Timeout
+}
+
+#endif
 
 } /* namespace rffc507x */

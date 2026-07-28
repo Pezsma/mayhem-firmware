@@ -843,6 +843,11 @@ class RFFC507x {
     reg_t read(const address_t reg_num);
     void write(const address_t reg_num, const reg_t value);
 
+#ifdef PRALINE
+    bool poll_ld(uint8_t& prelock_state);
+    bool wait_for_lock();
+#endif
+
    private:
     spi::SPI _bus{};
 

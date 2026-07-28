@@ -392,13 +392,13 @@ const PALConfig pal_default_config = {
             .data = boot_bit(max283x_select, 1)  // PD_14: !MAX2831 chip select
                     | boot_bit(max2831_rxhp, 0)  // PD_15: MAX2831 RXHP control RXHP low = 100 Hz HPF
                     | (1 << 30)                  // PD_16: MAX5865 chip select
-                    | (1 << 25)                  // PD_11: RFFC5072 Lock Detect
+                    | boot_bit(rffc5072_ld, 1)   // PD_11: RFFC5072 Lock Detect
                     | boot_bit(trigger_in, 0)    // PD_12: TRIGGER IN
             ,
             .dir = boot_bit(max283x_select, 1)  // PD_14: !MAX2831 chip select
                    | boot_bit(max2831_rxhp, 1)  // PD_15: MAX2831 RXHP control
                    | (1 << 30)                  // PD_16: MAX5865 chip select
-                   | (0 << 25)                  // PD_11: RFFC5072 Lock Detect
+                   | boot_bit(rffc5072_ld, 0)   // PD_11: RFFC5072 Lock Detect
                    | boot_bit(trigger_in, 0)    // PD_12: TRIGGER IN
 #else
             .data = 0,
@@ -520,7 +520,7 @@ const PALConfig pal_default_config = {
         {map_max283x_enable.scu_port, map_max283x_enable.scu_pin, scu_config_normal_drive_t{.mode = map_max283x_enable.gpio_mode, .epd = 0, .epun = 1, .ehs = 1, .ezi = 0, .zif = 0}},  // P4_6 max283x enable, PRALINE: PE_1: MAX2831 !SHDN
 
 #ifdef PRALINE
-        {13, 11, scu_config_normal_drive_t{.mode = 4, .epd = 0, .epun = 0, .ehs = 0, .ezi = 1, .zif = 0}},                                                                                             // PD_11: RFFC Lock Detect
+        {map_rffc5072_ld.scu_port, map_rffc5072_ld.scu_pin, scu_config_normal_drive_t{.mode = map_rffc5072_ld.gpio_mode, .epd = 0, .epun = 0, .ehs = 0, .ezi = 1, .zif = 0}},                          // PD_11: RFFC Lock Detect
         {map_max2831_rxhp.scu_port, map_max2831_rxhp.scu_pin, scu_config_normal_drive_t{.mode = map_max2831_rxhp.gpio_mode, .epd = 0, .epun = 1, .ehs = 1, .ezi = 1, .zif = 1}},                       // PD_15: MAX2831 RXHP
         {13, 16, scu_config_normal_drive_t{.mode = 4, .epd = 0, .epun = 1, .ehs = 1, .ezi = 0, .zif = 0}},                                                                                             // PD_16: MAX5864 CS
         {map_max2831_rxtx_enable.scu_port, map_max2831_rxtx_enable.scu_pin, scu_config_normal_drive_t{.mode = map_max2831_rxtx_enable.gpio_mode, .epd = 0, .epun = 1, .ehs = 1, .ezi = 1, .zif = 1}},  // PE_2: MAX2831 RXTX

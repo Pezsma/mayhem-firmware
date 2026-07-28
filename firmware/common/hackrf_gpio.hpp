@@ -33,12 +33,7 @@ namespace one {
 
 /* GPIO */
 
-#ifdef PRALINE
-
-constexpr GPIO gpio_max2831_ld = gpio[GPIO4_11];  // MAX2831 Lock Detect (P9_6)
-
-#else
-
+#ifndef PRALINE
 constexpr GPIO gpio_max2837_rxenable = gpio[GPIO2_5];
 constexpr GPIO gpio_max2837_txenable = gpio[GPIO2_4];
 constexpr GPIO gpio_max2839_rxtx = gpio[GPIO2_5];
