@@ -122,7 +122,7 @@ void MAX2831::init() {
 
     /* Set initial gains - matches GSG reference */
     set_reg_field(12, REG12_TXVGA_GAIN_MASK, 0x00); /* Minimum TX gain */
-    set_reg_field(7, REG7_RX_HPF_SEL_MASK, REG7_RX_HPF_30KHZ);
+    set_reg_field(7, REG7_RX_HPF_SEL_MASK, REG7_RX_HPF_100HZ);
     set_reg_field(11, REG11_LNA_GAIN_MASK, REG11_LNA_GAIN_MAX);
     set_reg_field(11, REG11_RXVGA_GAIN_MASK, 0x18);  // Moderate RX VGA gain
 

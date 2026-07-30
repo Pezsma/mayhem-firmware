@@ -318,8 +318,6 @@ bool set_tuning_frequency(const rf::Frequency frequency) {
             first_if.set_frequency(tuning_config.first_lo_frequency);
             first_if.enable();
 #ifdef PRALINE
-            // first_if.flush();            // Force register write with reference clock present
-            // chThdSleepMilliseconds(10);  // Allow PLL to settle
 
             first_if.wait_for_lock();
 #endif
@@ -386,8 +384,33 @@ void set_baseband_filter_bandwidth_tx(const uint32_t bandwidth_minimum) {
 }
 
 void set_baseband_rate(const uint32_t rate) {
+#ifdef PRALINE
+    uint8_t n = 0;
+    const uint8_t max_n = 5;                 // Maximum 2^5 = 32-szeres decimáció/interpoláció
+    const uint32_t max_afe_rate = 40000000;  // 40 MHz a Praline MAX5865 ADC/DAC fizikai maximuma
+
+    // Dinamikusan kiszámoljuk a legmagasabb biztonságos túlmintavételezési szorzót (log2 alapon)
+    // Addig növeljük 'n'-t, amíg a felszorzott órajel belefér a 40 MHz-be.
+    while ((((uint64_t)rate) << (n + 1)) <= max_afe_rate && n < max_n) {
+        n++;
+    }
+
+    // A fizikai órajel a hardver felé
+    uint32_t afe_rate = rate << n;
+
+    // Beállítjuk a gyors fizikai órajelet a mikrokontrollerben és az ADC-ben
+    portapack::clock_manager.set_sampling_frequency(afe_rate);
+
+    // Szólunk az FPGA-nak, hogy ossza le (vagy szorozza fel) az adatot a kért 'rate'-re
+    if (direction == rf::Direction::Transmit) {
+        debug::fpga::register_write(FPGA_REG_TX_INTERP, n);
+    } else {
+        debug::fpga::register_write(FPGA_REG_DECIM, n);
+    }
+#else
+
     portapack::clock_manager.set_sampling_frequency(rate);
-    // TODO: actually set baseband too?
+#endif
 }
 
 void set_antenna_bias(const bool on) {
