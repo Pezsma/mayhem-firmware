@@ -404,6 +404,7 @@ constexpr PinMap map_max283x_select{13, 14, 6, 28, 4};
 constexpr PinMap map_max283x_enable{14, 1, 7, 1, 4};
 constexpr PinMap map_max2831_rxtx_enable{14, 2, 7, 2, 4};
 constexpr PinMap map_max2831_rxhp{13, 15, 6, 29, 4};
+constexpr PinMap map_max2831_ld{9, 6, 4, 11, 0};
 
 // constexpr PinMap map_unused_1{2, 7, 0, 7, 0};
 
@@ -442,6 +443,10 @@ constexpr PinMap map_rffc5072_sdata{6, 4, 3, 3, 0};
 
 constexpr PinMap map_max283x_select{1, 20, 0, 15, 0};
 constexpr PinMap map_max283x_enable{4, 6, 2, 6, 0};
+
+constexpr PinMap map_max2837_rxenable{4, 5, 2, 5, 0};
+constexpr PinMap map_max2837_txenable{4, 4, 2, 4, 0};
+constexpr PinMap map_max2839_rxtx{4, 5, 2, 5, 0};
 
 #endif
 
@@ -553,6 +558,9 @@ constexpr GPIO max2831_rxtx_enable{pin_max2831_rxtx_enable, map_max2831_rxtx_ena
 constexpr Pin pin_max2831_rxhp{map_max2831_rxhp.scu_port, map_max2831_rxhp.scu_pin};                                               // SCU: PD_15
 constexpr GPIO max2831_rxhp{pin_max2831_rxhp, map_max2831_rxhp.gpio_port, map_max2831_rxhp.gpio_pad, map_max2831_rxhp.gpio_mode};  // GPIO[6]29
 
+constexpr Pin pin_max2831_ld{map_max2831_ld.scu_port, map_max2831_ld.scu_pin};                                           // SCU: P9_6
+constexpr GPIO max2831_ld{pin_max2831_ld, map_max2831_ld.gpio_port, map_max2831_ld.gpio_pad, map_max2831_ld.gpio_mode};  // GPIO[4]11
+
 #else
 constexpr Pin pin_sgpio_13{map_sgpio_13.scu_port, map_sgpio_13.scu_pin};                                       // SCU: P4_8
 constexpr GPIO sgpio_13{pin_sgpio_13, map_sgpio_13.gpio_port, map_sgpio_13.gpio_pad, map_sgpio_13.gpio_mode};  // GPIO[5]12
@@ -635,6 +643,15 @@ static const motocon_pwm_resources_t motocon_pwm_resources = {
 static const scu_setup_t pin_setup_vaa_enablex_pwm = {5, 0, scu_config_normal_drive_t{.mode = 1, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}};
 static const scu_setup_t pin_setup_vaa_enablex_gpio_og = {map_og_VAA_en.scu_port, map_og_VAA_en.scu_pin, scu_config_normal_drive_t{.mode = map_og_VAA_en.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}};
 static const scu_setup_t pin_setup_vaa_enablex_gpio_r9 = {map_r9_VAA_en.scu_port, map_r9_VAA_en.scu_pin, scu_config_normal_drive_t{.mode = map_r9_VAA_en.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}};
+
+constexpr Pin pin_max2837_rxenable{map_max2837_rxenable.scu_port, map_max2837_rxenable.scu_pin};                                                       // SCU: P4_5
+constexpr GPIO max2837_rxenable{pin_max2837_rxenable, map_max2837_rxenable.gpio_port, map_max2837_rxenable.gpio_pad, map_max2837_rxenable.gpio_mode};  // GPIO[2]5
+
+constexpr Pin pin_max2837_txenable{map_max2837_txenable.scu_port, map_max2837_txenable.scu_pin};                                                       // SCU: P4_4
+constexpr GPIO max2837_txenable{pin_max2837_txenable, map_max2837_txenable.gpio_port, map_max2837_txenable.gpio_pad, map_max2837_txenable.gpio_mode};  // GPIO[2]4
+
+constexpr Pin pin_max2839_rxtx{map_max2839_rxtx.scu_port, map_max2839_rxtx.scu_pin};                                               // SCU: P4_5
+constexpr GPIO max2839_rxtx{pin_max2839_rxtx, map_max2839_rxtx.gpio_port, map_max2839_rxtx.gpio_pad, map_max2839_rxtx.gpio_mode};  // GPIO[2]5
 
 #endif
 

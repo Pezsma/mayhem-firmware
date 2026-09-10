@@ -168,22 +168,23 @@ const PALConfig pal_default_config = {
                     | boot_bit(led_rx, 1)   // P4_2:  LED2 (RX)
                     | boot_bit(led_usb, 1)  // P4_1:  LED1 (USB)
 #else
-                    | boot_bit(tx_amp, 0)     // P5_6:  TX_AMP
-                    | boot_bit(rx_mix_bp, 1)  // P5_3:  RX_MIX_BP
-                    | boot_bit(tx_mix_bp, 0)  // P5_2:  TX_MIX_BP
-                    | boot_bit(lpf, 0)        // P5_1:  LPF
-                    | (0 << 9)                // P5_0:  Varies by revision
-                    | boot_bit(hpf, 0)        // P4_0:  HPF
-                    | boot_bit(sgpio_9, 1)    // P4_3:  SGPIO9, HOST_CAPTURE
-                    | (0 << 6)                // P4_6:  XCVR_EN, 10K PD
-                    | boot_bit(led_tx, 0)     // P6_12: LED3 (TX)
-                    | boot_bit(led_rx, 0)     // P4_2:  LED2 (RX)
-                    | boot_bit(led_usb, 0)    // P4_1:  LED1 (USB)
+                    | boot_bit(tx_amp, 0)            // P5_6:  TX_AMP
+                    | boot_bit(rx_mix_bp, 1)         // P5_3:  RX_MIX_BP
+                    | boot_bit(tx_mix_bp, 0)         // P5_2:  TX_MIX_BP
+                    | boot_bit(lpf, 0)               // P5_1:  LPF
+                    | (0 << 9)                       // P5_0:  Varies by revision
+                    | boot_bit(hpf, 0)               // P4_0:  HPF
+                    | boot_bit(sgpio_9, 1)           // P4_3:  SGPIO9, HOST_CAPTURE
+                    | boot_bit(max2837_txenable, 0)  // P4_4:  TXENABLE
+                    | (0 << 6)                       // P4_6:  XCVR_EN, 10K PD
+                    | boot_bit(led_tx, 0)            // P6_12: LED3 (TX)
+                    | boot_bit(led_rx, 0)            // P4_2:  LED2 (RX)
+                    | boot_bit(led_usb, 0)           // P4_1:  LED1 (USB)
+                    | boot_bit(max2837_rxenable, 0)  // P4_5:  RXENABLE
 #endif
 
                     | boot_bit(rffc5072_select, 1)  // P5_4:  !MIXER_ENX
                     | (1 << 7)                      // P5_7:  CS_AD
-                    | (0 << 5)                      // P4_5:  RXENABLE
             ,
             .dir =
 #ifdef PRALINE
@@ -197,20 +198,21 @@ const PALConfig pal_default_config = {
                 | (0 << 3)   // P4_3:  VBUSCTRL input
                 | (0 << 6)   // P4_6:  Input
 #else
-                boot_bit(tx_amp, 1)            // P5_6:  TX_AMP
-                | boot_bit(rx_mix_bp, 1)       // P5_3:  RX_MIX_BP
-                | boot_bit(tx_mix_bp, 1)       // P5_2:  TX_MIX_BP
-                | boot_bit(lpf, 1)             // P5_1:  LPF
-                | (0 << 9)                     // P5_0:  Varies by revision
-                | boot_bit(hpf, 1)             // P4_0:  HPF
-                | boot_bit(sgpio_9, 0)         // P4_3:  SGPIO9, HOST_CAPTURE
-                | boot_bit(max283x_enable, 1)  // P4_6:  XCVR_EN, 10K PD
+                boot_bit(tx_amp, 1)              // P5_6:  TX_AMP
+                | boot_bit(rx_mix_bp, 1)         // P5_3:  RX_MIX_BP
+                | boot_bit(tx_mix_bp, 1)         // P5_2:  TX_MIX_BP
+                | boot_bit(lpf, 1)               // P5_1:  LPF
+                | (0 << 9)                       // P5_0:  Varies by revision
+                | boot_bit(hpf, 1)               // P4_0:  HPF
+                | boot_bit(sgpio_9, 0)           // P4_3:  SGPIO9, HOST_CAPTURE
+                | boot_bit(max2837_txenable, 1)  // P4_4:  TXENABLE
+                | boot_bit(max2837_rxenable, 1)  // P4_5:  RXENABLE
+                | boot_bit(max283x_enable, 1)    // P4_6:  XCVR_EN, 10K PD
 #endif
                 | boot_bit(rffc5072_select, 1)  // P5_4:  !MIXER_ENX
                 | boot_bit(rffc5072_resetx, 1)  // P5_5:  !MIXER_RESETX
                 | boot_bit(led_tx, 1)           // P6_12: LED3 (TX)
                 | (1 << 7)                      // P5_7:  CS_AD
-                | (1 << 5)                      // P4_5:  RXENABLE
                 | boot_bit(led_rx, 1)           // P4_2:  LED2 (RX)
                 | boot_bit(led_usb, 1)          // P4_1:  LED1 (USB)
         },
@@ -282,7 +284,7 @@ const PALConfig pal_default_config = {
                 | (0 << 4)                     // P8_4: VBUS_IN_EN
                 | boot_bit(VAA_en, 1)          // P8_1: !VAA_EN
                 | (0 << 10)                    // PA_3: Output GND
-                | (0 << 11)                    // P9_6: MAX2831 LD
+                | boot_bit(max2831_ld, 0)      // P9_6: MAX2831 LD
                 | boot_bit(rf5072_mix_en, 0)   // P9_0: RF5072 enable
                 | (0 << 13)                    // P9_1: Output GND
                 | boot_bit(rffc5072_sdata, 0)  // P9_2: RFFC5072 SDATA
@@ -302,7 +304,7 @@ const PALConfig pal_default_config = {
                 | (1 << 4)                     // P8_4: VBUS_IN_EN
                 | boot_bit(VAA_en, 1)          // P8_1: !VAA_EN
                 | (1 << 10)                    // PA_3: Output
-                | (0 << 11)                    // P9_6: MAX2831 LD
+                | boot_bit(max2831_ld, 0)      // P9_6: MAX2831 LD
                 | boot_bit(rf5072_mix_en, 1)   // P9_0: RF5072 enable
                 | (1 << 13)                    // P9_1: Output
                 | boot_bit(rffc5072_sdata, 1)  // P9_2: RFFC5072 SDATA (Bidirectional)
@@ -501,13 +503,13 @@ const PALConfig pal_default_config = {
         {map_clkin_ctrl.scu_port, map_clkin_ctrl.scu_pin, scu_config_normal_drive_t{.mode = map_clkin_ctrl.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},     // P1_20  CLKIN_ctrl
 #else
 
-        {4, 9, scu_config_normal_drive_t{.mode = 7, .epd = 0, .epun = 0, .ehs = 0, .ezi = 0, .zif = 0}},                                                                    // SGPIO14/BANK2F3M4: CPLD_P81
-        {4, 10, scu_config_normal_drive_t{.mode = 7, .epd = 0, .epun = 0, .ehs = 0, .ezi = 0, .zif = 0}},                                                                   // SGPIO15/BANK2F3M6: CPLD_P78
-        {4, 5, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                                                                    // RXENABLE
-        {map_hpf.scu_port, map_hpf.scu_pin, scu_config_normal_drive_t{.mode = map_hpf.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                       // P4_0 HPF
-        {map_rx_amp.scu_port, map_rx_amp.scu_pin, scu_config_normal_drive_t{.mode = map_rx_amp.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},              // P2_11 RX_AMP
-        {map_rx_amp_pwr.scu_port, map_rx_amp_pwr.scu_pin, scu_config_normal_drive_t{.mode = map_rx_amp_pwr.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},  // P2_12 !RX_AMP_PWR
-        {map_tx_mix_bp.scu_port, map_tx_mix_bp.scu_pin, scu_config_normal_drive_t{.mode = map_tx_mix_bp.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},     // P5_2 TX_MIX_BP
+        {4, 9, scu_config_normal_drive_t{.mode = 7, .epd = 0, .epun = 0, .ehs = 0, .ezi = 0, .zif = 0}},                                                                                      // SGPIO14/BANK2F3M4: CPLD_P81
+        {4, 10, scu_config_normal_drive_t{.mode = 7, .epd = 0, .epun = 0, .ehs = 0, .ezi = 0, .zif = 0}},                                                                                     // SGPIO15/BANK2F3M6: CPLD_P78
+        {map_max2837_rxenable.scu_port, map_max2837_rxenable.scu_pin, scu_config_normal_drive_t{.mode = map_max2837_rxenable.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},  // RXENABLE / MAX2839 RT+TX enable
+        {map_hpf.scu_port, map_hpf.scu_pin, scu_config_normal_drive_t{.mode = map_hpf.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                                         // P4_0 HPF
+        {map_rx_amp.scu_port, map_rx_amp.scu_pin, scu_config_normal_drive_t{.mode = map_rx_amp.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                                // P2_11 RX_AMP
+        {map_rx_amp_pwr.scu_port, map_rx_amp_pwr.scu_pin, scu_config_normal_drive_t{.mode = map_rx_amp_pwr.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                    // P2_12 !RX_AMP_PWR
+        {map_tx_mix_bp.scu_port, map_tx_mix_bp.scu_pin, scu_config_normal_drive_t{.mode = map_tx_mix_bp.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                       // P5_2 TX_MIX_BP
 #endif
 
         // RADIO & RF PATH (MAX2831, RFFC5072, Mixers, Switches, Amps)
@@ -527,7 +529,7 @@ const PALConfig pal_default_config = {
         {map_p1_ctrl1.scu_port, map_p1_ctrl1.scu_pin, scu_config_normal_drive_t{.mode = map_p1_ctrl1.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                                   // P6_8 P1_CTRL1 (Output GND, Mode 4)
         {map_aa_en.scu_port, map_aa_en.scu_pin, scu_config_normal_drive_t{.mode = map_aa_en.gpio_mode, .epd = 0, .epun = 1, .ehs = 1, .ezi = 1, .zif = 0}},                                            // P1_14: AA_EN
         {map_rf5072_mix_en.scu_port, map_rf5072_mix_en.scu_pin, scu_config_normal_drive_t{.mode = map_rf5072_mix_en.gpio_mode, .epd = 1, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                    // P9_0: RF5072 MIX EN
-        {9, 6, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 0, .ehs = 0, .ezi = 0, .zif = 0}},                                                                                               // P9_6: MAX2831 LD Input
+        {map_max2831_ld.scu_port, map_max2831_ld.scu_pin, scu_config_normal_drive_t{.mode = map_max2831_ld.gpio_mode, .epd = 0, .epun = 0, .ehs = 0, .ezi = 0, .zif = 0}},                             // P9_6: MAX2831 LD Input
         {map_tx_enable.scu_port, map_tx_enable.scu_pin, scu_config_normal_drive_t{.mode = map_tx_enable.gpio_mode, .epd = 0, .epun = 1, .ehs = 1, .ezi = 0, .zif = 0}},                                // P6_5: TX enable
         {10, 1, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 1, .ehs = 1, .ezi = 0, .zif = 0}},                                                                                              // PA_1: LPF enable
         {10, 2, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 1, .ehs = 1, .ezi = 0, .zif = 0}},                                                                                              // PA_2: RF amp enable
@@ -599,11 +601,11 @@ static const std::array<gpio_setup_t, 6> gpio_setup_og{{
      .dir = 0},
     {
         // GPIO2
-        .data = boot_bit(og_VAA_en, 1)  // P5_0:  !VAA_ENABLE
-                | (0 << 4)              // P4_4:  TXENABLE
+        .data = boot_bit(og_VAA_en, 1)           // P5_0:  !VAA_ENABLE
+                | boot_bit(max2837_txenable, 0)  // P4_4:  TXENABLE
         ,
-        .dir = boot_bit(og_VAA_en, 1)  // P5_0:  !VAA_ENABLE
-               | (1 << 4)              // P4_4:  TXENABLE
+        .dir = boot_bit(og_VAA_en, 1)           // P5_0:  !VAA_ENABLE
+               | boot_bit(max2837_txenable, 1)  // P4_4:  TXENABLE
     },
     {
         // GPIO3
@@ -679,10 +681,10 @@ static const std::array<scu_setup_t, 7> pins_setup_og{{
     {map_og_1v8_en.scu_port, map_og_1v8_en.scu_pin, scu_config_normal_drive_t{.mode = map_og_1v8_en.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}}, /* EN1V8/P70: 10K PD, TPS62410.EN2(I), 1V8LED.A(I) */
 
     /* Radio section control */
-    {2, 5, scu_config_normal_drive_t{.mode = 4, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                                                     /* RX/P43: U7.VCTL1(I), U10.VCTL1(I), U2.VCTL1(I) */
-    {4, 4, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                                                     /* TXENABLE/P55: MAX2837.TXENABLE(I) */
-    {map_og_tx.scu_port, map_og_tx.scu_pin, scu_config_normal_drive_t{.mode = map_og_tx.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},  /* TX/P42: U7.VCTL2(I), U10.VCTL2(I), U2.VCTL2(I) */
-    {map_og_rx.scu_port, map_og_rx.scu_pin, scu_config_normal_drive_t{.mode = map_og_rx.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},  // P2_5
+    {2, 5, scu_config_normal_drive_t{.mode = 4, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                                                                                     /* RX/P43: U7.VCTL1(I), U10.VCTL1(I), U2.VCTL1(I) */
+    {map_max2837_txenable.scu_port, map_max2837_txenable.scu_pin, scu_config_normal_drive_t{.mode = map_max2837_txenable.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}}, /* TXENABLE/P55: MAX2837.TXENABLE(I) */
+    {map_og_tx.scu_port, map_og_tx.scu_pin, scu_config_normal_drive_t{.mode = map_og_tx.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                                  /* TX/P42: U7.VCTL2(I), U10.VCTL2(I), U2.VCTL2(I) */
+    {map_og_rx.scu_port, map_og_rx.scu_pin, scu_config_normal_drive_t{.mode = map_og_rx.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                                  // P2_5
     /* SGPIO for sample transfer interface to HackRF CPLD. */
     {map_sgpio_13.scu_port, map_sgpio_13.scu_pin, scu_config_normal_drive_t{.mode = map_sgpio_13.gpio_mode, .epd = 1, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}}, /* SGPIO13/BANK2F3M2: CPLD.90/HOST_SYNC_EN(I) */
 }};
