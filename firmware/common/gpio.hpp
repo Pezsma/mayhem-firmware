@@ -448,6 +448,9 @@ constexpr PinMap map_max2837_rxenable{4, 5, 2, 5, 0};
 constexpr PinMap map_max2837_txenable{4, 4, 2, 4, 0};
 constexpr PinMap map_max2839_rxtx{4, 5, 2, 5, 0};
 
+constexpr PinMap map_cpld_tdo{9, 5, 5, 18, 4};
+constexpr PinMap map_cpld_tms{6, 5, 3, 4, 0};
+
 #endif
 
 constexpr PinMap map_sgpio_0{0, 0, 0, 0, 3};
@@ -471,6 +474,9 @@ constexpr PinMap map_isp{2, 7, 0, 7, 0};
 
 constexpr PinMap map_rffc5072_select{5, 4, 2, 13, 0};
 constexpr PinMap map_rffc5072_resetx{5, 5, 2, 14, 0};
+
+constexpr PinMap map_cpld_tck{6, 0, 3, 0, 0};
+constexpr PinMap map_cpld_tdi{6, 1, 3, 1, 0};
 
 #ifdef PRALINE
 
@@ -653,6 +659,12 @@ constexpr GPIO max2837_txenable{pin_max2837_txenable, map_max2837_txenable.gpio_
 constexpr Pin pin_max2839_rxtx{map_max2839_rxtx.scu_port, map_max2839_rxtx.scu_pin};                                               // SCU: P4_5
 constexpr GPIO max2839_rxtx{pin_max2839_rxtx, map_max2839_rxtx.gpio_port, map_max2839_rxtx.gpio_pad, map_max2839_rxtx.gpio_mode};  // GPIO[2]5
 
+constexpr Pin pin_cpld_tdo{map_cpld_tdo.scu_port, map_cpld_tdo.scu_pin};                                       // SCU: P9_5
+constexpr GPIO cpld_tdo{pin_cpld_tdo, map_cpld_tdo.gpio_port, map_cpld_tdo.gpio_pad, map_cpld_tdo.gpio_mode};  // GPIO[5]18
+
+constexpr Pin pin_cpld_tms{map_cpld_tms.scu_port, map_cpld_tms.scu_pin};                                       // SCU: P6_5
+constexpr GPIO cpld_tms{pin_cpld_tms, map_cpld_tms.gpio_port, map_cpld_tms.gpio_pad, map_cpld_tms.gpio_mode};  // GPIO[3]4
+
 #endif
 
 // SGPIO
@@ -736,6 +748,12 @@ constexpr GPIO max283x_select{pin_max283x_select, map_max283x_select.gpio_port, 
 
 constexpr Pin pin_max283x_enable{map_max283x_enable.scu_port, map_max283x_enable.scu_pin};                                                   // SCU: P4_6, PRALINE: PE_1
 constexpr GPIO max283x_enable{pin_max283x_enable, map_max283x_enable.gpio_port, map_max283x_enable.gpio_pad, map_max283x_enable.gpio_mode};  // GPIO[2]6, PRALINE: GPIO[7]1
+
+constexpr Pin pin_cpld_tck{map_cpld_tck.scu_port, map_cpld_tck.scu_pin};                                       // SCU: P6_0
+constexpr GPIO cpld_tck{pin_cpld_tck, map_cpld_tck.gpio_port, map_cpld_tck.gpio_pad, map_cpld_tck.gpio_mode};  // GPIO[3]0
+
+constexpr Pin pin_cpld_tdi{map_cpld_tdi.scu_port, map_cpld_tdi.scu_pin};                                       // SCU: P6_1
+constexpr GPIO cpld_tdi{pin_cpld_tdi, map_cpld_tdi.gpio_port, map_cpld_tdi.gpio_pad, map_cpld_tdi.gpio_mode};  // GPIO[3]1
 
 }  // namespace gpio_control
 

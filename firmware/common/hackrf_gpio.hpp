@@ -41,19 +41,6 @@ constexpr GPIO gpio_max5864_select = gpio[GPIO2_7];
 
 constexpr GPIO gpio_q_invert = gpio[GPIO0_13];
 
-#ifdef PRALINE
-/* PRALINE has no HackRF CPLD. These pins are used for RFFC5072 and TX_EN instead.
- * Dummy assignments here allow cpld_update.cpp to compile; the functions
- * that use them are never called on PRALINE. */
-constexpr GPIO gpio_cpld_tdo = gpio[GPIO3_0];  // dummy: reuse TCK pin
-constexpr GPIO gpio_cpld_tms = gpio[GPIO3_1];  // dummy: reuse TDI pin
-#else
-constexpr GPIO gpio_cpld_tdo = gpio[GPIO5_18];
-constexpr GPIO gpio_cpld_tms = gpio[GPIO3_4];
-#endif
-constexpr GPIO gpio_cpld_tck = gpio[GPIO3_0];
-constexpr GPIO gpio_cpld_tdi = gpio[GPIO3_1];
-
 } /* namespace one */
 } /* namespace hackrf */
 

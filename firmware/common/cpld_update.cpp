@@ -21,7 +21,8 @@
 
 #include "cpld_update.hpp"
 
-#include "hackrf_gpio.hpp"
+#include "gpio.hpp"
+using namespace gpio_control;
 #include "portapack_hal.hpp"
 #include "portapack.hpp"
 
@@ -233,10 +234,10 @@ void init_from_eeprom() {
 
 static jtag::GPIOTarget jtag_target_hackrf() {
     return {
-        hackrf::one::gpio_cpld_tck,
-        hackrf::one::gpio_cpld_tms,
-        hackrf::one::gpio_cpld_tdi,
-        hackrf::one::gpio_cpld_tdo,
+        cpld_tck,
+        cpld_tms,
+        cpld_tdi,
+        cpld_tdo,
     };
 }
 

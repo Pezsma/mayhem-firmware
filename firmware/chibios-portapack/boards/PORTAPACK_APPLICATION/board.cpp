@@ -234,12 +234,15 @@ const PALConfig pal_default_config = {
                     | boot_bit(aux_power_oc, 0)  // P6_11: AUX overcurrent
                     | boot_bit(sct_clk_in, 0)    // P6_4:  SCT clock input
 #else
-                    | (1 << 4)                     // P6_5:  HackRF CPLD.TMS(I)
+                    | boot_bit(cpld_tck, 0)        // P6_0
+                    | boot_bit(cpld_tdi, 0)        // P6_1
+                    | boot_bit(sgpio_4, 1)         // P6_3:  SGPIO4
+                    | boot_bit(rffc5072_sdata, 0)  // P6_4:  MIXER_SDATA
+                    | boot_bit(cpld_tms, 1)        // P6_5:  HackRF CPLD.TMS(I)
                     | boot_bit(vregmode, 1)        // P6_11: VREGMODE
                     | (0 << 6)                     // P6_10: Varies by revision
-                    | boot_bit(sgpio_4, 1)         // P6_3:  SGPIO4
                     | boot_bit(tx_amp_pwr, 1)      // P6_9:  !TX_AMP_PWR, 10K PU
-                    | boot_bit(rffc5072_sdata, 0)  // P6_4:  MIXER_SDATA
+
 #endif
                     | (1 << 1)  // P6_2:  HackRF CPLD.TDI(I)
                     | (1 << 0)  // P6_1:  HackRF CPLD.TCK(I)
@@ -260,13 +263,16 @@ const PALConfig pal_default_config = {
                    | boot_bit(p1_ctrl2, 1)      // P6_9:  P1_CTRL2
                    | boot_bit(sct_clk_in, 0)    // P6_4:  SCT clock input
 #else
+                   | boot_bit(cpld_tck, 1)        // P6_0
+                   | boot_bit(cpld_tdi, 1)        // P6_1
+                   | boot_bit(sgpio_4, 0)         // P6_3:  SGPIO4
+                   | boot_bit(rffc5072_sdata, 1)  // P6_4:  MIXER_SDATA
+                   | boot_bit(cpld_tms, 0)        // P6_5:  HackRF CPLD.TMS(I)
                    | boot_bit(vregmode, 1)        // P6_11: VREGMODE
                    | (0 << 6)                     // P6_10: Varies by revision
-                   | boot_bit(sgpio_4, 0)         // P6_3:  SGPIO4
                    | boot_bit(tx_amp_pwr, 1)      // P6_9:  !TX_AMP_PWR, 10K PU
-                   | boot_bit(rffc5072_sdata, 1)  // P6_4:  MIXER_SDATA
 #endif
-                   | (0 << 4)  // P6_5:  HackRF CPLD.TMS(I)
+
                    | (0 << 1)  // P6_2:  HackRF CPLD.TDI(I)
                    | (0 << 0)  // P6_1:  HackRF CPLD.TCK(I)
         },
@@ -333,7 +339,7 @@ const PALConfig pal_default_config = {
                 | (0 << 12)                      // P4_8: Output GND
                 | boot_bit(vregmode, 1)          // P4_9: TPS62410 VREGMODE
 #else
-                (1 << 18)                      // P9_5: HackRF CPLD.TDO(O)
+                boot_bit(cpld_tdo, 1)          // P9_5: HackRF CPLD.TDO(O)
                 | boot_bit(rffc5072_clock, 0)  // P2_6: MIXER_SCLK
                 | (1 << 14)                    // P4_10: SGPIO15, CPLD (unused)
                 | boot_bit(rx_mix_bypass, 1)   // P6_8: RX MIX BYPASS
@@ -370,7 +376,7 @@ const PALConfig pal_default_config = {
                 | (1 << 12)                      // P4_8: Output
                 | boot_bit(vregmode, 1)          // P4_9: TPS62410 VREGMODE
 #else
-                (0 << 18)                      // P9_5: HackRF CPLD.TDO(O)
+                boot_bit(cpld_tdo, 0)          // P9_5: HackRF CPLD.TDO(O)
                 | boot_bit(rffc5072_clock, 1)  // P2_6: MIXER_SCLK
                 | (0 << 14)                    // P4_10: SGPIO15, CPLD
                 | boot_bit(rx_mix_bypass, 1)   // P6_8: RX MIX BYPASS
@@ -568,17 +574,17 @@ const PALConfig pal_default_config = {
 
         // PORTAPACK SPECIFIC & JTAG (CPLD, UI, Audio, SD)
 
-        {6, 0, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 0, .ehs = 0, .ezi = 0, .zif = 0}},  // I2S0_RX_MCLK: Unused
+        {map_cpld_tck.scu_port, map_cpld_tck.scu_pin, scu_config_normal_drive_t{.mode = map_cpld_tck.gpio_mode, .epd = 0, .epun = 0, .ehs = 0, .ezi = 0, .zif = 0}},  // I2S0_RX_MCLK: Unused
 
 #ifndef PRALINE
-        {9, 5, scu_config_normal_drive_t{.mode = 4, .epd = 0, .epun = 0, .ehs = 0, .ezi = 1, .zif = 0}},   // CPLD_TDO: HackRF CPLD.TDO(O)
-        {6, 5, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},   // CPLD_TMS: HackRF CPLD.TMS(I)
-        {15, 4, scu_config_normal_drive_t{.mode = 7, .epd = 0, .epun = 0, .ehs = 0, .ezi = 0, .zif = 0}},  // I2S0_RX_SCK: Unused
+        {map_cpld_tdo.scu_port, map_cpld_tdo.scu_pin, scu_config_normal_drive_t{.mode = map_cpld_tdo.gpio_mode, .epd = 0, .epun = 0, .ehs = 0, .ezi = 1, .zif = 0}},  // CPLD_TDO: HackRF CPLD.TDO(O)
+        {map_cpld_tms.scu_port, map_cpld_tms.scu_pin, scu_config_normal_drive_t{.mode = map_cpld_tms.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},  // CPLD_TMS: HackRF CPLD.TMS(I)
+        {15, 4, scu_config_normal_drive_t{.mode = 7, .epd = 0, .epun = 0, .ehs = 0, .ezi = 0, .zif = 0}},                                                             // I2S0_RX_SCK: Unused
 #endif
-        {1, 5, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 0, .ehs = 0, .ezi = 1, .zif = 0}},  // SD_POW: PortaPack CPLD.TDO(O)
-        {1, 8, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 0, .ehs = 0, .ezi = 0, .zif = 0}},  // SD_VOLT0: PortaPack CPLD.TMS(I)
-        {6, 1, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},  // CPLD_TCK: PortaPack CPLD.TCK(I)
-        {6, 2, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 1, .ehs = 0, .ezi = 1, .zif = 0}},  // CPLD_TDI: PortaPack CPLD.TDI(I)
+        {1, 5, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 0, .ehs = 0, .ezi = 1, .zif = 0}},                                                              // SD_POW: PortaPack CPLD.TDO(O)
+        {1, 8, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 0, .ehs = 0, .ezi = 0, .zif = 0}},                                                              // SD_VOLT0: PortaPack CPLD.TMS(I)
+        {map_cpld_tdi.scu_port, map_cpld_tdi.scu_pin, scu_config_normal_drive_t{.mode = map_cpld_tdi.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},  // CPLD_TCK: PortaPack CPLD.TCK(I)
+        {6, 2, scu_config_normal_drive_t{.mode = 0, .epd = 0, .epun = 1, .ehs = 0, .ezi = 1, .zif = 0}},                                                              // CPLD_TDI: PortaPack CPLD.TDI(I)
 
         {map_isp.scu_port, map_isp.scu_pin, scu_config_normal_drive_t{.mode = map_isp.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},                       // P2_7: ISP: 10K PU, Unused
         {map_dfu_boot_0.scu_port, map_dfu_boot_0.scu_pin, scu_config_normal_drive_t{.mode = map_dfu_boot_0.gpio_mode, .epd = 0, .epun = 1, .ehs = 0, .ezi = 0, .zif = 0}},  // P1_1: 10K PU, BOOT0

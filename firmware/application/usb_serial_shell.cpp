@@ -29,7 +29,9 @@
 
 #include "portapack.hpp"
 #include "portapack_hal.hpp"
-#include "hackrf_gpio.hpp"
+#include "gpio.hpp"
+using namespace gpio_control;
+
 #include "jtag_target_gpio.hpp"
 #include "cpld_max5.hpp"
 #include "portapack_cpld_data.hpp"
@@ -418,6 +420,7 @@ static void cmd_rtcset(BaseSequentialStream* chp, int argc, char* argv[]) {
     chprintf(chp, "ok\r\n");
 }
 
+#ifndef PRALINE
 static void cpld_info(BaseSequentialStream* chp, int argc, char* argv[]) {
     const char* usage =
         "usage: cpld_info <device>\r\n"
@@ -431,10 +434,10 @@ static void cpld_info(BaseSequentialStream* chp, int argc, char* argv[]) {
 
     if (strncmp(argv[0], "hackrf", 5) == 0) {
         jtag::GPIOTarget jtag_target_hackrf_cpld{
-            hackrf::one::gpio_cpld_tck,
-            hackrf::one::gpio_cpld_tms,
-            hackrf::one::gpio_cpld_tdi,
-            hackrf::one::gpio_cpld_tdo,
+            cpld_tck,
+            cpld_tms,
+            cpld_tdi,
+            cpld_tdo,
         };
 
         hackrf::one::cpld::CPLD hackrf_cpld{jtag_target_hackrf_cpld};
@@ -564,6 +567,7 @@ static void cpld_info(BaseSequentialStream* chp, int argc, char* argv[]) {
         chprintf(chp, usage);
     }
 }
+#endif
 
 // walks throught the given widget's childs in recurse to get all support text and pass it to a callback function
 static void widget_collect_accessibility(BaseSequentialStream* chp, ui::Widget* w, void (*callback)(BaseSequentialStream*, const std::string&, const std::string&), ui::Widget* focusedWidget) {
@@ -750,6 +754,7 @@ static void cmd_applist(BaseSequentialStream* chp, int argc, char* argv[]) {
     chprintf(chp, "ok\r\n");
 }
 
+#ifndef PRALINE
 static void cmd_cpld_read(BaseSequentialStream* chp, int argc, char* argv[]) {
     const char* usage =
         "usage: cpld_read <device> <target>\r\n"
@@ -764,10 +769,10 @@ static void cmd_cpld_read(BaseSequentialStream* chp, int argc, char* argv[]) {
     if (strncmp(argv[0], "hackrf", 5) == 0) {
         if (strncmp(argv[1], "eeprom", 5) == 0) {
             jtag::GPIOTarget jtag_target_hackrf_cpld{
-                hackrf::one::gpio_cpld_tck,
-                hackrf::one::gpio_cpld_tms,
-                hackrf::one::gpio_cpld_tdi,
-                hackrf::one::gpio_cpld_tdo,
+                cpld_tck,
+                cpld_tms,
+                cpld_tdi,
+                cpld_tdo,
             };
 
             hackrf::one::cpld::CPLD hackrf_cpld{jtag_target_hackrf_cpld};
@@ -797,10 +802,10 @@ static void cmd_cpld_read(BaseSequentialStream* chp, int argc, char* argv[]) {
 
         else if (strncmp(argv[1], "sram", 5) == 0) {
             jtag::GPIOTarget jtag_target_hackrf_cpld{
-                hackrf::one::gpio_cpld_tck,
-                hackrf::one::gpio_cpld_tms,
-                hackrf::one::gpio_cpld_tdi,
-                hackrf::one::gpio_cpld_tdo,
+                cpld_tck,
+                cpld_tms,
+                cpld_tdi,
+                cpld_tdo,
             };
 
             hackrf::one::cpld::CPLD hackrf_cpld{jtag_target_hackrf_cpld};
@@ -1095,6 +1100,7 @@ static void cmd_cpld_write(BaseSequentialStream* chp, int argc, char* argv[]) {
         chprintf(chp, usage);
     }
 }
+#endif
 
 static void cmd_gotgps(BaseSequentialStream* chp, int argc, char* argv[]) {
     const char* usage = "usage: gotgps <lat> <lon> [altitude] [speed] [satinuse]\r\n";
@@ -1531,9 +1537,11 @@ static const ShellCommand commands[] = {
     USB_SERIAL_SHELL_SD_COMMANDS,
     {"rtcget", cmd_rtcget},
     {"rtcset", cmd_rtcset},
+#ifndef PRALINE
     {"cpld_info", cpld_info},
     {"cpld_read", cmd_cpld_read},
     {"cpld_write", cmd_cpld_write},
+#endif
     {"accessibility_readall", cmd_accessibility_readall},
     {"accessibility_readcurr", cmd_accessibility_readcurr},
     {"applist", cmd_applist},
