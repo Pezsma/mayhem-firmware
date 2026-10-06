@@ -251,6 +251,15 @@ void ReceiverModel::set_squelch_level(uint8_t v) {
     update_modulation();
 }
 
+uint8_t ReceiverModel::am_squelch_level() const {
+    return settings_.am_squelch_level;
+}
+
+void ReceiverModel::set_am_squelch_level(uint8_t v) {
+    settings_.am_squelch_level = v;
+    update_modulation();
+}
+
 void ReceiverModel::set_antenna_bias() {
     update_antenna_bias();
 }
@@ -325,6 +334,11 @@ void ReceiverModel::disable() {
 
 void ReceiverModel::initialize() {
     settings_ = settings_t{};
+#ifdef PRALINE
+    narrowband_capture_enabled_ = false;
+#endif
+    hidden_offset = 0;
+    application_fs4_direction_ = RxFs4Direction::Down;
     am_spectrum_zoom_ = spectrum_zoom_for_am_config(settings_.am_config_index);
 }
 
@@ -356,18 +370,52 @@ void ReceiverModel::configure_from_app_settings(
     settings_.squelch_level = settings.squelch;
 }
 
+#ifdef PRALINE
+void ReceiverModel::set_narrowband_capture_enabled(bool enabled) {
+    if (narrowband_capture_enabled_ == enabled)
+        return;
+    narrowband_capture_enabled_ = enabled;
+    update_tuning_frequency();
+}
+
+rx_afe::CapturePolicy ReceiverModel::capture_afe_policy() const {
+    return rx_afe::capture_policy(sampling_rate(),
+                                  narrowband_capture_enabled_ && modulation() == Mode::Capture);
+}
+#endif
+
 int32_t ReceiverModel::tuning_offset() {
     if ((modulation() == Mode::SpectrumAnalysis)) {
         return 0;
     } else {
-        return -(sampling_rate() / 4);
+        const int32_t quarter_rate = static_cast<int32_t>(sampling_rate() / 4);
+        const rf::Frequency effective_frequency = target_frequency() + hidden_offset;
+        return baseband::supports_rx_fs4() && effective_frequency - quarter_rate < 0
+                   ? quarter_rate
+                   : -quarter_rate;
     }
 }
 
 void ReceiverModel::update_tuning_frequency() {
-    // TODO: use positive offset if freq < offset.
     if (enabled_) {
-        radio::set_tuning_frequency(target_frequency() + hidden_offset + tuning_offset());
+        const auto offset = tuning_offset();
+#ifdef PRALINE
+        const auto afe_policy = capture_afe_policy();
+        if (!radio::set_tuning_frequency(target_frequency() + hidden_offset + offset, afe_policy.disable_quarter_shift))
+#else
+        if (!radio::set_tuning_frequency(target_frequency() + hidden_offset + offset))
+#endif
+            return;
+
+        if (modulation() != Mode::SpectrumAnalysis && baseband::supports_rx_fs4()) {
+            application_fs4_direction_ = offset > 0 ? RxFs4Direction::Up : RxFs4Direction::Down;
+            // Re-send on enable too: the active processor may have restarted.
+            baseband::set_rx_fs4_direction(application_fs4_direction_);
+        }
+#ifdef PRALINE
+        // A tune can change the FPGA shift (including the special zero entry).
+        update_baseband_bandwidth();
+#endif
     }
 }
 
@@ -394,8 +442,7 @@ void ReceiverModel::update_baseband_bandwidth() {
          * The previous version used /8 in both places and read the shift from
          * bits 2-3 of FPGA register 1, which do not exist in the gateware, so
          * it always took the no-shift branch. At the ADS-B rate that asked for
-         * 750 kHz, which is below the MAX2831's 1.75 MHz floor and therefore
-         * also switched in the external narrowband AA filter
+         * 750 kHz, which qualified for the external narrowband AA filter
          * (MAX2831::set_lpf_rf_bandwidth_rx), squeezing the RX path shut. The
          * reference asks for 17.5 MHz at the same rate and the AA filter stays
          * out of circuit.
@@ -405,7 +452,8 @@ void ReceiverModel::update_baseband_bandwidth() {
         uint8_t resampling_n = portapack::clock_manager.get_resampling_n();
         uint32_t afe_rate = sample_rate << resampling_n;
 
-        uint32_t lpf_bandwidth = (sample_rate * 3) / 4;
+        const auto afe_policy = capture_afe_policy();
+        uint32_t lpf_bandwidth = afe_policy.useful_bandwidth_hz;
 
         const uint8_t quarter_shift = radio::debug::get_cached_quarter_shift();
         if (quarter_shift != 0) {
@@ -413,7 +461,7 @@ void ReceiverModel::update_baseband_bandwidth() {
             lpf_bandwidth += offset * 2;
         }
 
-        radio::set_baseband_filter_bandwidth_rx(lpf_bandwidth);
+        radio::set_baseband_filter_bandwidth_rx(lpf_bandwidth, afe_policy.narrowband);
 #else
         radio::set_baseband_filter_bandwidth_rx(baseband_bandwidth());
 #endif
@@ -486,7 +534,7 @@ void ReceiverModel::update_modulation() {
 }
 
 void ReceiverModel::update_am_configuration() {
-    am_configs[am_configuration()].apply(am_spectrum_zoom_);
+    am_configs[am_configuration()].apply(am_spectrum_zoom_, am_squelch_level());
 }
 
 void ReceiverModel::update_amfm_configuration() {
