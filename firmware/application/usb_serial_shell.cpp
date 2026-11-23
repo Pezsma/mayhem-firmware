@@ -58,7 +58,9 @@ using namespace gpio_control;
 #include <cstring>
 #include <libopencm3/lpc43xx/wwdt.h>
 
-#define SHELL_WA_SIZE THD_WA_SIZE(1024 * 3)
+#include <malloc.h>
+
+#define SHELL_WA_SIZE THD_WA_SIZE(1024 * 6)
 #define palOutputPad(port, pad) (LPC_GPIO->DIR[(port)] |= 1 << (pad))
 
 static EventDispatcher* _eventDispatcherInstance = NULL;
@@ -653,10 +655,8 @@ static void cmd_accessibility_readcurr(BaseSequentialStream* chp, int argc, char
 }
 
 static void cmd_appstart(BaseSequentialStream* chp, int argc, char* argv[]) {
-    (void)argc;
-    (void)argv;
     if (argc != 1) {
-        chprintf(chp, "Usage: appstart APPCALLNAME");
+        chprintf(chp, "Usage: appstart APPCALLNAME\r\n");
         return;
     }
     auto evtd = getEventDispatcherInstance();
@@ -665,15 +665,42 @@ static void cmd_appstart(BaseSequentialStream* chp, int argc, char* argv[]) {
     if (!top_widget) return;
     auto nav = static_cast<ui::SystemView*>(top_widget)->get_navigation_view();
     if (!nav) return;
-    if (nav->StartAppByName(argv[0])) {
-        chprintf(chp, "ok\r\n");
-        return;
+
+    evtd->enter_shell_working_mode();
+    bool ok = nav->StartAppByName(argv[0]);
+    if (!ok) {
+        ok = ui::ExternalItemsMenuLoader::run_external_app(*nav, argv[0]);
     }
-    bool ret = ui::ExternalItemsMenuLoader::run_external_app(*nav, argv[0]);
-    if (!ret) {
+    evtd->exit_shell_working_mode();
+
+    chprintf(chp, ok ? "ok\r\n" : "error\r\n");
+}
+
+static void cmd_apphome(BaseSequentialStream* chp, int argc, char* argv[]) {
+    (void)argc;
+    (void)argv;
+    auto evtd = getEventDispatcherInstance();
+    if (!evtd) {
         chprintf(chp, "error\r\n");
         return;
     }
+    auto top_widget = evtd->getTopWidget();
+    if (!top_widget) {
+        chprintf(chp, "error\r\n");
+        return;
+    }
+    auto nav = static_cast<ui::SystemView*>(top_widget)->get_navigation_view();
+    if (!nav) {
+        chprintf(chp, "error\r\n");
+        return;
+    }
+
+    evtd->enter_shell_working_mode();
+    nav->home(true);
+    evtd->exit_shell_working_mode();
+
+    evtd->wait_finish_frame();
+    evtd->wait_finish_frame();
     chprintf(chp, "ok\r\n");
 }
 
@@ -915,6 +942,75 @@ static void cmd_cpld_read(BaseSequentialStream* chp, int argc, char* argv[]) {
     } else {
         chprintf(chp, usage);
     }
+}
+
+static void get_thread_free_stack(Thread* tp, size_t& min_free, size_t& cur_free) {
+#if CH_DBG_ENABLE_STACK_CHECK
+    const uint8_t* limit = reinterpret_cast<const uint8_t*>(tp->p_stklimit);
+#else
+    const uint8_t* limit = reinterpret_cast<const uint8_t*>(tp) + sizeof(Thread);
+#endif
+
+    uint8_t stack_probe = 0;
+    const uint8_t* sp = (tp == chThdSelf())
+                            ? &stack_probe
+                            : reinterpret_cast<const uint8_t*>(tp->p_ctx.r13);
+
+    if (sp > limit) {
+        cur_free = static_cast<size_t>(sp - limit);
+    } else {
+        cur_free = 0;
+    }
+
+#if CH_DBG_FILL_THREADS
+    const uint8_t* p = limit;
+    while (p < sp && *p == CH_STACK_FILL_VALUE) {
+        ++p;
+    }
+    min_free = static_cast<size_t>(p - limit);
+#else
+    min_free = cur_free;
+#endif
+}
+
+static void cmd_stacks(BaseSequentialStream* chp, int argc, char* argv[]) {
+    (void)argc;
+    (void)argv;
+
+    chprintf(chp, "MEM core_free=%u main_stk_free=%u m0_stk_free=%u m0_heap_free=%u\r\n",
+             static_cast<unsigned>(chCoreStatus()),
+             static_cast<unsigned>(get_free_stack_space()),
+             static_cast<unsigned>(shared_memory.m4_stack_usage),
+             static_cast<unsigned>(shared_memory.m4_heap_usage));
+
+#if CH_USE_REGISTRY
+    Thread* tp = chRegFirstThread();
+    while (tp != nullptr) {
+        size_t min_free = 0;
+        size_t cur_free = 0;
+        get_thread_free_stack(tp, min_free, cur_free);
+
+        char name_buf[24];
+        const char* raw_name = tp->p_name ? tp->p_name : "unnamed";
+        size_t i = 0;
+        for (; i < sizeof(name_buf) - 1 && raw_name[i] != '\0'; ++i) {
+            name_buf[i] = (raw_name[i] == ' ') ? '_' : raw_name[i];
+        }
+        name_buf[i] = '\0';
+
+        chprintf(chp, "THD addr=0x%08lX name=%s prio=%u state=%u stk_min_free=%u stk_cur_free=%u\r\n",
+                 static_cast<unsigned long>(reinterpret_cast<uintptr_t>(tp)),
+                 name_buf,
+                 static_cast<unsigned>(tp->p_prio),
+                 static_cast<unsigned>(tp->p_state),
+                 static_cast<unsigned>(min_free),
+                 static_cast<unsigned>(cur_free));
+
+        tp = chRegNextThread(tp);
+    }
+#endif
+
+    chprintf(chp, "ok\r\n");
 }
 
 static uint32_t reverse(uint32_t x) {
@@ -1544,6 +1640,8 @@ static const ShellCommand commands[] = {
     {"accessibility_readcurr", cmd_accessibility_readcurr},
     {"applist", cmd_applist},
     {"appstart", cmd_appstart},
+    {"apphome", cmd_apphome},
+    {"stacks", cmd_stacks},
     {"gotgps", cmd_gotgps},
     {"gotorientation", cmd_gotorientation},
     {"gotenv", cmd_gotenv},
