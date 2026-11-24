@@ -989,15 +989,38 @@ static void cmd_stacks(BaseSequentialStream* chp, int argc, char* argv[]) {
 
     chprintf(chp,
              "MEM core_free=%u heap_free=%u heap_frags=%u libc_free=%u true_free=%u "
-             "main_stk_free=%u m0_stk_free=%u m0_heap_free=%u\r\n",
+             "main_stk_free=%u m4_stk_free=%u m4_heap_free=%u\r\n",
              static_cast<unsigned>(core_free),
              static_cast<unsigned>(heap_free),
              static_cast<unsigned>(heap_frags),
              static_cast<unsigned>(libc_free),
              static_cast<unsigned>(true_free),
              static_cast<unsigned>(get_free_stack_space()),
-             static_cast<unsigned>(shared_memory.m0_stack_usage),
-             static_cast<unsigned>(shared_memory.m0_heap_usage));
+             static_cast<unsigned>(shared_memory.m4_stack_usage),
+             static_cast<unsigned>(shared_memory.m4_heap_usage));
+
+#if CH_USE_REGISTRY
+    Thread* tp = chRegFirstThread();
+    while (tp != nullptr) {
+        size_t min_free = 0;
+        size_t cur_free = 0;
+        get_thread_free_stack(tp, min_free, cur_free);
+
+        char name_buf[24];
+        const char* raw_name = tp->p_name ? tp->p_name : "unnamed";
+        size_t i = 0;
+        for (; i < sizeof(name_buf) - 1 && raw_name[i] != '\0'; ++i) {
+            name_buf[i] = (raw_name[i] == ' ') ? '_' : raw_name[i];
+        }
+        name_buf[i] = '\0';
+
+        chprintf(chp, "THD addr=0x%08lX name=%s prio=%u state=%u stk_min_free=%u stk_cur_free=%u\r\n",
+                 static_cast<unsigned long>(reinterpret_cast<uintptr_t>(tp)),
+                 name_buf,
+                 static_cast<unsigned>(tp->p_prio),
+                 static_cast<unsigned>(tp->p_state),
+                 static_cast<unsigned>(min_free),
+                 static_cast<unsigned>(cur_free));
 
         tp = chRegNextThread(tp);
     }
@@ -1005,7 +1028,6 @@ static void cmd_stacks(BaseSequentialStream* chp, int argc, char* argv[]) {
 
     chprintf(chp, "ok\r\n");
 }
-
 static uint32_t reverse(uint32_t x) {
     x = ((x >> 1) & 0x55555555u) | ((x & 0x55555555u) << 1);
     x = ((x >> 2) & 0x33333333u) | ((x & 0x33333333u) << 2);
