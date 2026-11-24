@@ -977,34 +977,27 @@ static void cmd_stacks(BaseSequentialStream* chp, int argc, char* argv[]) {
     (void)argc;
     (void)argv;
 
-    chprintf(chp, "MEM core_free=%u main_stk_free=%u m0_stk_free=%u m0_heap_free=%u\r\n",
-             static_cast<unsigned>(chCoreStatus()),
+    size_t heap_free = 0;
+    size_t heap_frags = 0;
+#if CH_USE_HEAP
+    heap_frags = chHeapStatus(nullptr, &heap_free);
+#endif
+    struct mallinfo mi = mallinfo();
+    size_t libc_free = (mi.fordblks > 0) ? static_cast<size_t>(mi.fordblks) : 0;
+    size_t core_free = chCoreStatus();
+    size_t true_free = core_free + heap_free + libc_free;
+
+    chprintf(chp,
+             "MEM core_free=%u heap_free=%u heap_frags=%u libc_free=%u true_free=%u "
+             "main_stk_free=%u m0_stk_free=%u m0_heap_free=%u\r\n",
+             static_cast<unsigned>(core_free),
+             static_cast<unsigned>(heap_free),
+             static_cast<unsigned>(heap_frags),
+             static_cast<unsigned>(libc_free),
+             static_cast<unsigned>(true_free),
              static_cast<unsigned>(get_free_stack_space()),
-             static_cast<unsigned>(shared_memory.m4_stack_usage),
-             static_cast<unsigned>(shared_memory.m4_heap_usage));
-
-#if CH_USE_REGISTRY
-    Thread* tp = chRegFirstThread();
-    while (tp != nullptr) {
-        size_t min_free = 0;
-        size_t cur_free = 0;
-        get_thread_free_stack(tp, min_free, cur_free);
-
-        char name_buf[24];
-        const char* raw_name = tp->p_name ? tp->p_name : "unnamed";
-        size_t i = 0;
-        for (; i < sizeof(name_buf) - 1 && raw_name[i] != '\0'; ++i) {
-            name_buf[i] = (raw_name[i] == ' ') ? '_' : raw_name[i];
-        }
-        name_buf[i] = '\0';
-
-        chprintf(chp, "THD addr=0x%08lX name=%s prio=%u state=%u stk_min_free=%u stk_cur_free=%u\r\n",
-                 static_cast<unsigned long>(reinterpret_cast<uintptr_t>(tp)),
-                 name_buf,
-                 static_cast<unsigned>(tp->p_prio),
-                 static_cast<unsigned>(tp->p_state),
-                 static_cast<unsigned>(min_free),
-                 static_cast<unsigned>(cur_free));
+             static_cast<unsigned>(shared_memory.m0_stack_usage),
+             static_cast<unsigned>(shared_memory.m0_heap_usage));
 
         tp = chRegNextThread(tp);
     }
